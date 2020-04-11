@@ -19,6 +19,47 @@ public class DBManager {
 		return con;
 	}
 	
+	public void setConfigValue (String key, String value) {
+		Connection con = getConnection();
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		
+		boolean isUpdate = false;
+		
+		String sql = "select * from cfg "
+				+ "where cfgkey = ?";
+		
+		try {
+			ps = con.prepareStatement(sql);
+			ps.setString(1, key);
+			rs = ps.executeQuery();
+			
+			if(rs.isBeforeFirst()) {
+				// Key already in the database
+				isUpdate = true;
+			}
+			
+			if(isUpdate) {
+				sql = "update cfg set mdate = now(), cfgvalue = ?"
+						+ "where cfgkey = ?";
+			} else {
+				sql = "insert into cfg (cdate, mdate, cfgvalue, cfgkey) "
+						+ "values (now(), now(), ?, ?)";
+			}
+			
+			ps.close();
+			ps = con.prepareStatement(sql);
+			ps.setString(1, value);
+			ps.setString(2, key);
+			ps.executeUpdate();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			DBUtil.close(con, ps, rs);
+		}
+	}
+	
 	public String getConfigValue(String key) {
 		String value = "";
 		Connection con = getConnection();
@@ -26,7 +67,7 @@ public class DBManager {
 		ResultSet rs = null;
 		
 		String sql = "select * from cfg "
-				+ "where `key` = ?";
+				+ "where cfgkey = ?";
 		
 		try {
 			ps = con.prepareStatement(sql);
@@ -34,7 +75,7 @@ public class DBManager {
 			rs = ps.executeQuery();
 			
 			while(rs.next()) {
-				value = rs.getString("value");
+				value = rs.getString("cfgvalue");
 			}
 			
 		} catch (SQLException e) {

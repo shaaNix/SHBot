@@ -18,6 +18,16 @@ public class DBUtil {
 		}
 	}
 	
+	public static void close(PreparedStatement ps, ResultSet rs) {
+		try {
+			rs.close();
+			ps.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	public static void close(Connection con) {
 		try {
 			con.close();
